@@ -1,0 +1,8 @@
+name = "Scalar2D"
+uuid = "5bc112a4-948e-4ee8-97db-5e93cb2afb54"
+authors = ["dalbandea <albandeadavid@gmail.com>"]
+version = "0.1.0"
+
+[deps]
+Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
+ReverseDiff = "37e2e3b7-166d-5795-8a7a-e32c996b4267"
