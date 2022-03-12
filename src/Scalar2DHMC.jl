@@ -1,4 +1,13 @@
-function HMC!(phi, eps, ns, acc, prm::LattParm; AD_tape = 0)
+molecular_dynamics(integrator::Leapfrog, mom, phi, eps, ns, prm,
+                   AD_tape::Nothing) = 
+                            leapfrog!(mom, phi, eps, ns, prm::LattParm, prm)
+molecular_dynamics(integrator::Leapfrog, mom, phi, eps, ns, prm,
+                   AD_tape::ReverseDiff.CompiledTape) = 
+                            leapfrog!(mom, phi, eps, ns, prm::LattParm, AD_tape)
+molecular_dynamics(integrator::OMF4, mom, phi, eps, ns, prm,
+                   AD_tape::Nothing) = OMF4!(mom, phi, eps, ns, prm::LattParm)
+
+function HMC!(phi, eps, ns, acc, prm::LattParm; integrator::Integrators = leapfrog(), AD_tape = nothing)
 
     phi_cp = similar(phi)
     phi_cp .= phi
@@ -6,8 +15,7 @@ function HMC!(phi, eps, ns, acc, prm::LattParm; AD_tape = 0)
     mom = Random.randn(Float64, prm.iL[1], prm.iL[2])
     hini = Hamiltonian(mom, phi, prm)
 
-    # OMF4!(mom, phi, eps, ns, prm::LattParm)
-    leapfrog!(mom, phi, eps, ns, prm::LattParm, AD_tape)
+    molecular_dynamics(integrator, mom, phi, eps, ns, prm, AD_tape)
     
     hfin = Hamiltonian(mom, phi, prm)
 
@@ -88,10 +96,10 @@ function OMF4!(mom, phi, eps, ns, prm::LattParm)
 end
 
 
-function leapfrog!(mom, phi, eps, ns, prm::LattParm, AD_tape)
+function leapfrog!(mom, phi, eps, ns, prm::LattParm, force_method)
 
 	# First half-step for momenta
-	update_momenta!(mom, phi, eps/2.0, prm, AD_tape)
+	update_momenta!(mom, phi, eps/2.0, prm, force_method)
 
 	# ns-1 steps
 	for i in 1:(ns-1) 
@@ -99,28 +107,21 @@ function leapfrog!(mom, phi, eps, ns, prm::LattParm, AD_tape)
         update_field!(phi, mom, eps) 
 
 		#Update momenta
-        update_momenta!(mom, phi, eps, prm, AD_tape)
+        update_momenta!(mom, phi, eps, prm, force_method)
 	end
 	# Last update for gauge links
     update_field!(phi, mom, eps) 
 
 	# Last half-step for momenta
-    update_momenta!(mom, phi, eps/2.0,prm, AD_tape)
+    update_momenta!(mom, phi, eps/2.0,prm, force_method)
 
 	return nothing
 end
 
+function update_momenta!(mom, phi, eps, prm, force_method)
 
-function update_momenta!(mom, phi, eps, prm, AD_tape)
     frc = zeros(Float64, prm.iL[1], prm.iL[2])
-
-    if AD_tape == 0
-        force!(frc, phi, prm)
-    elseif isa(AD_tape, ReverseDiff.CompiledTape)
-        forcead!(frc, phi, AD_tape)
-    else
-        throw("Incorrect tape")
-    end
+    force!(frc, phi, force_method)
     mom .= mom .+ eps .* frc
 
     return nothing
@@ -128,7 +129,7 @@ end
 
 function update_field!(phi, mom, eps)
 
-    phi .= phi + eps * mom
+    phi .= phi .+ eps * mom
     
     return nothing
 end
