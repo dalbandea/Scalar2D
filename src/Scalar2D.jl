@@ -19,7 +19,7 @@ end
 export LattParmA, LattParmB
 
 include("integrators/integrators.jl")
-export Integrators, leapfrog, OMF4
+export Integrators, Leapfrog, OMF4
 
 include("Scalar2DAction.jl")
 export action, force!

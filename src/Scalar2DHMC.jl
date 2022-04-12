@@ -7,7 +7,7 @@ molecular_dynamics(integrator::Leapfrog, mom, phi, eps, ns, prm,
 molecular_dynamics(integrator::OMF4, mom, phi, eps, ns, prm,
                    AD_tape::Nothing) = OMF4!(mom, phi, eps, ns, prm::LattParm)
 
-function HMC!(phi, eps, ns, acc, prm::LattParm; integrator::Integrators = leapfrog(), AD_tape = nothing)
+function HMC!(phi, eps, ns, acc, prm::LattParm; integrator::Integrators = Leapfrog(), AD_tape = nothing)
 
     phi_cp = similar(phi)
     phi_cp .= phi
