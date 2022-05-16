@@ -28,7 +28,7 @@ include("Scalar2DHMC.jl")
 export HMC!, Hamiltonian, OMF4!, leapfrog!, update_momenta!, update_field!
 
 include("Scalar2DMeasurements.jl")
-export magnetization, susceptibility, chi2
+export magnetization, susceptibility, chi2, correlation_function, correlation_function2
 
 
 end # module
