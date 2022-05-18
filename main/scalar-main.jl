@@ -6,6 +6,7 @@ Pkg.activate(".")
 using Scalar2D, ReverseDiff
 using DelimitedFiles
 using ArgParse
+using InteractiveUtils
 
 # julia16 main/scalar-main.jl -L 10 -b 0.5 --nsteps 10 -n 1 --wdir=trash/
 function parse_commandline()
@@ -82,6 +83,7 @@ logdir = joinpath(wdir, "logs")
 logfile = joinpath(logdir, "log.txt")
 mesdir = joinpath(wdir, "measurements")
 magfile = joinpath(mesdir, wdir_prefix*"_mag.txt")
+g0file = joinpath(mesdir, wdir_prefix*"_g0.txt")
 corrfile = joinpath(mesdir, wdir_prefix*"_corr.txt")
 
 if isdir(wdir) == false
@@ -91,6 +93,21 @@ if isdir(wdir) == false
 else
     error("Directory wdir already exists.")
 end
+
+#############
+# LOGS ######
+#############
+
+global io_stat = open(logfile, "a")
+versioninfo(io_stat)
+write(io_stat, "\n\n")
+write(io_stat, "$(PROGRAM_FILE) $(join(ARGS, " "))")
+close(io_stat)
+
+
+#############
+# HMC #######
+#############
 
 # Perform n_traj HMC steps
 acc = Vector{Int64}()
@@ -102,6 +119,10 @@ for i in 1:n_traj
 
     global io_stat = open(magfile, "a")
     write(io_stat, "$(magnetization(phi))\n")
+    close(io_stat)
+
+    global io_stat = open(g0file, "a")
+    write(io_stat, "$(G0(phi))\n")
     close(io_stat)
 
     global io_stat = open(corrfile, "a")
