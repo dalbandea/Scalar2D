@@ -6,8 +6,12 @@ function G0(phi)
     return sum(phi.^2) / length(phi)
 end
 
+# function susceptibility(phi)
+#     return sum(phi[1] * phi) / length(phi)
+# end
+
 function susceptibility(phi)
-    return sum(phi[1] * phi) / length(phi)
+    return sum(phi.^2) / length(phi)
 end
 
 function chi2(mags, prm)
@@ -51,4 +55,17 @@ function correlation_function(phi)
     end
 
     return C ./ L
+end
+
+function correlation_matrix(phi)
+    L = size(phi)[1]
+    C = zeros((L,L))
+
+    for i in 1:L
+        for j in 1:L
+            C[i,j] = correlation_function(phi, (i-1, j-1))
+        end
+    end
+
+    return C
 end

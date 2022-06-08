@@ -9,6 +9,7 @@ using ArgParse
 using InteractiveUtils
 
 # julia16 main/scalar-main.jl -L 10 -b 0.5 --nsteps 10 -n 1 --wdir=trash/
+# julia16 --threads=auto  main/scalar-main.jl -L 80 -b 0.677 -l 0.5 --nmeas 400 --nsteps 18 -n 2000000 --wdir=results/1-Checks/
 function parse_commandline()
     s = ArgParseSettings()
 
@@ -40,6 +41,12 @@ function parse_commandline()
         required = true
         arg_type = Int
 
+        "--nmeas"
+        help = "measure every nmeas trajectories"
+        required = false
+        arg_type = Int
+        default = 1
+
         "-n"
         help = "number of trajectories"
         required = true
@@ -69,6 +76,7 @@ tau     = parsed_args["t"]
 nsteps  = parsed_args["nsteps"]
 epsilon = tau/nsteps
 n_traj  = parsed_args["n"]
+n_meas  = parsed_args["nmeas"]
 
 # Initialize phi field with random numbers
 phi = zeros(prm.iL[1], prm.iL[2])
@@ -117,18 +125,20 @@ for i in 1:n_traj
 
     @time HMC!(phi, epsilon, nsteps, acc, prm, integrator = Leapfrog());
 
-    global io_stat = open(magfile, "a")
-    write(io_stat, "$(magnetization(phi))\n")
-    close(io_stat)
+    if i % n_meas == 0
+        global io_stat = open(magfile, "a")
+        write(io_stat, "$(magnetization(phi))\n")
+        close(io_stat)
 
-    global io_stat = open(g0file, "a")
-    write(io_stat, "$(G0(phi))\n")
-    close(io_stat)
+        # global io_stat = open(g0file, "a")
+        # write(io_stat, "$(G0(phi))\n")
+        # close(io_stat)
 
-    global io_stat = open(corrfile, "a")
-    for value in correlation_function(phi)
-        write(io_stat, "$(value)\t")
+        # global io_stat = open(corrfile, "a")
+        # for value in correlation_function(phi)
+        #     write(io_stat, "$(value)\t")
+        # end
+        # write(io_stat, "\n")
+        # close(io_stat)
     end
-    write(io_stat, "\n")
-    close(io_stat)
 end
