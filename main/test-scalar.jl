@@ -6,7 +6,7 @@ using Scalar2D, ReverseDiff
 using ADerrors
 using Statistics, Plots
 using DelimitedFiles
-# pyplot()
+pyplot()
 
 import RecipesBase.plot
 plot(f::Function, x::Vector, args...; kwargs...) = plot(x, f.(x), args..., kwargs...)
@@ -36,7 +36,7 @@ prm     = LattParmB((lsize_1, lsize_2), beta, lambda)
 
 # HMC parameters
 tau     = 1.0
-nsteps  = 5
+nsteps  = 10
 epsilon = tau/nsteps
 n_traj  = 10
 
