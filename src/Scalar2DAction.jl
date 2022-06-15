@@ -86,3 +86,31 @@ function force!(frc, phi, prm::LattParmB)
 end
 
 
+# TODO: needs checking...
+function he_force(phi, prm, t)
+    L = prm.iL[1]
+    frc0 = similar(phi)
+    frc = similar(phi)
+    expmat = similar(phi)
+    force!(frc0, phi, prm)
+
+    function trururu(prm, x, xprime, t)
+        L = prm.iL[1]
+        res = zeros(ComplexF64, prm.iL)
+        for k1 in 1:L, k2 in 1:L
+            p = (2 * pi / L) .* (k1 - 1, k2 - 1)
+            p2 = Scalar2D.hat_p2(k1-1, k2-1, L)
+            res[k1, k2] = exp(p2*t) * exp(im * sum( p .* (xprime .- x)))
+        end
+        return real.(sum(res))
+    end
+
+    for x1 in 1:L, x2 in 1:L
+        for xp1 in 1:L, xp2 in 2:L
+            expmat[xp1, xp2] = trururu(prm, (x1, x2), (xp1, xp2), t)
+        end
+        frc[x1, x2] = sum(frc0 .* expmat)
+    end
+    
+    return 1/L^2 .* frc
+end

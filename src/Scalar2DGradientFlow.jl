@@ -1,9 +1,14 @@
+hat_p2(i::Int64, j::Int64, L::Int64) = 4 * (sin(pi * i / L)^2 + sin(pi * j / L)^2)
+
+"""
+Returns 
+"""
 function he_flow_p(phi, prm, t)
     L = prm.iL[1]
     ep2t = zeros((L,L)) 
 
     for j in 1:L, i in 1:L
-        p2 = 4 * (sin(2 * pi * (i-1) / L/ 2)^2 + sin(2 * pi * (j-1) / L / 2)^2)
+        p2 = hat_p2(i-1, j-1, L)
         ep2t[i,j] = exp(-p2*t)
     end
 

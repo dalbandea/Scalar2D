@@ -24,10 +24,10 @@ function print_errors(obs, ID)
 end
 
 # Theory Parameters
-lsize_1 = 6
+lsize_1 = 80
 lsize_2 = lsize_1
 lambda  = 0.5
-beta    = 0.537
+beta    = 0.677
 # msq     = 2 * ((1 - 2*lambda) / beta - 2)
 # lam     = 2*lambda/beta^2
 # lam     = 1.18
@@ -36,7 +36,7 @@ prm     = LattParmB((lsize_1, lsize_2), beta, lambda)
 
 # HMC parameters
 tau     = 1.0
-nsteps  = 10
+nsteps  = 20
 epsilon = tau/nsteps
 n_traj  = 10
 
@@ -52,14 +52,17 @@ cf_tape = ReverseDiff.compile(ReverseDiff.GradientTape(p -> -action(p,prm),
 acc = Vector{Int64}()
 corrs = Vector{Float64}()
 M = Vector{Float64}()
+M_t = Vector{Float64}()
 chi = Vector{Float64}()
 chi_t = Vector{Float64}()
-for i in 1:200000
+for i in 1:20000
     @time HMC!(phi, epsilon, nsteps, acc, prm)
     # push!(corrs, correlation_function(phi, (20,0)))
     # push!(M, magnetization(phi))
     push!(chi, susceptibility(phi))
-    phi_t = he_flow(phi, prm, prm.iL[1]^2/64)
+    # phi_t = he_flow(phi, prm, prm.iL[1]^2/64)
+    phi_t = he_flow(phi, prm, 1.0)
+    # push!(M_t, magnetization(phi_t))
     push!(chi_t, susceptibility(phi_t))
     # println("$i")
 end
