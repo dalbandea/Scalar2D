@@ -57,6 +57,13 @@ function parse_commandline()
         required = true
         arg_type = String
         # default = "configs/"
+
+        "--replica"
+        help = "Replica number. If !=0, wdir must point to existing directory
+        with existing replica 0"
+        required = false
+        default = 0
+        arg_type = Int
     end
 
     return parse_args(s)
@@ -82,6 +89,7 @@ nsteps  = parsed_args["nsteps"]
 epsilon = tau/nsteps
 n_traj  = parsed_args["n"]
 n_meas  = parsed_args["nmeas"]
+replica = parsed_args["replica"]
 
 
 ###########################
@@ -91,7 +99,20 @@ n_meas  = parsed_args["nmeas"]
 wdir_prefix = "L"*string(prm.iL[1])*"_b"*string(beta)*"_l"*string(lambda)
 dt = Dates.now()
 wdir_sufix = "_D"*Dates.format(dt, "yyyy-mm-dd-HH-MM-SS")
-wdir = joinpath(parsed_args["wdir"], wdir_prefix*wdir_sufix)
+
+if replica == 0
+    wdir = joinpath(parsed_args["wdir"], wdir_prefix*wdir_sufix, "0-r0")
+elseif replica > 0
+    if isdir(joinpath(parsed_args["wdir"], "0-r0"))
+        wdir = joinpath(parsed_args["wdir"], string(replica)*"-r"*string(replica))
+    else
+        error("Replica 0 folder not found")
+    end
+else
+    error("Replica number not valid")
+end
+
+# trururu
 
 logdir = joinpath(wdir, "logs")
 logfile = joinpath(logdir, "log.txt")
