@@ -55,7 +55,7 @@ function ana_observables(rep_path::String, obs_list::Vector{String}, transforms:
     for i in eachindex(obs_list)
         obs, lengths = read_replicas(rep_path, obs_list[i], burnout = burnout, skp = skp)
         for transform in transforms[i]
-            ana_observable(transform(obs), rep_path, lengths, skp = skp, out_file = out_file)
+            ana_observable(transform(obs), rep_path*obs_list[i], lengths, skp = skp, out_file = out_file)
 
         end
 
