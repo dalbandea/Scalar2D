@@ -33,4 +33,10 @@ export magnetization, susceptibility, chi2, correlation_function, correlation_fu
 include("Scalar2DGradientFlow.jl")
 export he_flow
 
+include("Scalar2DAnaTools.jl")
+export ana_observables
+
+include("Scalar2DLogs.jl")
+export create_patch, create_branchinfo
+
 end # module
