@@ -36,7 +36,7 @@ function ana_observables(rep_paths::Vector{String}, args...; kwargs...)
 end
 
 """
-Given a path directory, analyzes observables in `obs_list` transformed with the functions in `transform`, and prints mean and autocorrelation for each transform.
+Given a path directory, analyzes observables in `obs_list` transformed with the functions in `transform`, and prints mean and autocorrelation for each transform. Each different observable is analyzed as if it was from a different ensemble.
 
 - `transform`: must be a vector of functions. If for a given observables one wants to perform several transforms, then put them as a vector inside the vector. If not provided, it defaults to the identity transformation `identity`
 
@@ -94,16 +94,29 @@ function parse_acc(path::String)
     return round(mean(accs), digits=2)
 end
 
+# function parse_log(path::String)
+#     find_str = """.*log\\.txt\$"""
+#     cmd1 = `find $path -regex $find_str`
+#     cmd2 = `head -n 1`
+#     cmd3 = `xargs cat`
+#     cmd4 = `grep """^{.*}\$"""`
+#     cmd5 = `sed """s/[{}]//g"""`
+#     cmd6 = `sed """s/, /\\n/g"""`
+#     cmd7 = `grep """nsteps"""`
+#     cmd8 = `awk """{print \$NF}"""`
+#     nstps = pipeline(cmd1, cmd2, cmd3, cmd4, cmd5, cmd6, cmd7, cmd8) |> readchomp
+#     return parse(Int64, nstps)
+# end
+
 function parse_log(path::String)
     find_str = """.*log\\.txt\$"""
     cmd1 = `find $path -regex $find_str`
     cmd2 = `head -n 1`
     cmd3 = `xargs cat`
-    cmd4 = `grep """^{.*}\$"""`
-    cmd5 = `sed """s/[{}]//g"""`
-    cmd6 = `sed """s/, /\\n/g"""`
-    cmd7 = `grep """nsteps"""`
-    cmd8 = `awk """{print \$NF}"""`
-    nstps = pipeline(cmd1, cmd2, cmd3, cmd4, cmd5, cmd6, cmd7, cmd8) |> readchomp
+    cmd4 = `grep """\\-ns"""`
+    cmd5 = `tr """ """ """\\n"""`
+    cmd6 = `grep """\\-ns""" -A1`
+    cmd7 = `tail -n 1`
+    nstps = pipeline(cmd1, cmd2, cmd3, cmd4, cmd5, cmd6, cmd7) |> readchomp
     return parse(Int64, nstps)
 end
