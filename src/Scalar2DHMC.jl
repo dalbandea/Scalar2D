@@ -11,7 +11,7 @@ function HMC!(phi, eps, ns, acc, prm::LattParm; integrator::Integrators = Leapfr
 
     phi_cp = similar(phi)
     phi_cp .= phi
-    
+
     mom = Random.randn(Float64, prm.iL[1], prm.iL[2])
     hini = Hamiltonian(mom, phi, prm)
 
@@ -98,8 +98,10 @@ end
 
 function leapfrog!(mom, phi, eps, ns, prm::LattParm, force_method)
 
+    frc = zeros(Float64, prm.iL[1], prm.iL[2])
+
 	# First half-step for momenta
-	update_momenta!(mom, phi, eps/2.0, prm, force_method)
+	update_momenta!(frc, mom, phi, eps/2.0, prm, force_method)
 
 	# ns-1 steps
 	for i in 1:(ns-1) 
@@ -107,20 +109,19 @@ function leapfrog!(mom, phi, eps, ns, prm::LattParm, force_method)
         update_field!(phi, mom, eps) 
 
 		#Update momenta
-        update_momenta!(mom, phi, eps, prm, force_method)
+        update_momenta!(frc, mom, phi, eps, prm, force_method)
 	end
 	# Last update for gauge links
     update_field!(phi, mom, eps) 
 
 	# Last half-step for momenta
-    update_momenta!(mom, phi, eps/2.0,prm, force_method)
+    update_momenta!(frc, mom, phi, eps/2.0,prm, force_method)
 
 	return nothing
 end
 
-function update_momenta!(mom, phi, eps, prm, force_method)
+function update_momenta!(frc, mom, phi, eps, prm, force_method)
 
-    frc = zeros(Float64, prm.iL[1], prm.iL[2])
     force!(frc, phi, force_method)
     mom .= mom .+ eps .* frc
 
